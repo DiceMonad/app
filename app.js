@@ -476,108 +476,156 @@
   }
 
   async function onSwapAction() {
-    if (!window.ethereum) {
-      alert("Please install MetaMask to use this dApp.");
-      return;
-    }
-    const ok = await ensureMonadNetwork();
-    if (!ok) return;
-
-    if (!currentAccount || !web3Provider || !signer) {
-      alert("Please connect your wallet first.");
-      return;
-    }
-
-    const statusEl = $("swapStatus");
-    const fromInput = $("swapFromAmount");
-    if (!fromInput) return;
-
-    const raw = fromInput.value.trim();
-    if (!raw) {
-      if (statusEl) statusEl.textContent = "Please enter amount.";
-      return;
-    }
-
-    try {
-      initReadProvider();
-      initWriteContracts();
-
-      if (swapDirection === "dmnToMon") {
-        // DMN -> MON (requires DMN approve, so user signs twice if allowance is low)
-        const amountBN = parseDmnInput(raw);
-        if (!amountBN || amountBN.lte(0)) {
-          if (statusEl) statusEl.textContent = "Invalid DMN amount.";
-          return;
-        }
-
-        if (dmnBalanceBN.lt(amountBN)) {
-          if (statusEl) statusEl.textContent = "Insufficient DMN balance.";
-          alert("Not enough DMN in your wallet.");
-          return;
-        }
-
-        const allowanceBN = await dmnRead.allowance(
-          currentAccount,
-          SWAP_CONTRACT_ADDRESS
-        );
-        if (allowanceBN.lt(amountBN)) {
-          if (statusEl)
-            statusEl.textContent =
-              "Approving DMN for Swap (please confirm in MetaMask)...";
-          const txApprove = await dmnWrite.approve(
-            SWAP_CONTRACT_ADDRESS,
-            amountBN
-          );
-          await txApprove.wait();
-        }
-
-        if (statusEl)
-          statusEl.textContent = "Sending swap DMN→MON transaction...";
-        const tx = await swapWrite.swapDMNForMon(amountBN);
-        const receipt = await tx.wait();
-        if (receipt.status !== 1) {
-          if (statusEl) statusEl.textContent = "Swap transaction reverted.";
-          return;
-        }
-        if (statusEl) statusEl.textContent = "Swap DMN→MON successful!";
-      } else {
-        // MON -> DMN
-        const amountBN = parseMonInput(raw);
-        if (!amountBN || amountBN.lte(0)) {
-          if (statusEl) statusEl.textContent = "Invalid MON amount.";
-          return;
-        }
-        if (monBalanceBN.lt(amountBN)) {
-          if (statusEl) statusEl.textContent = "Insufficient MON balance.";
-          alert("Not enough MON in your wallet.");
-          return;
-        }
-        if (statusEl)
-          statusEl.textContent = "Sending swap MON→DMN transaction...";
-        const tx = await swapWrite.swapMonForDMN({ value: amountBN });
-        const receipt = await tx.wait();
-        if (receipt.status !== 1) {
-          if (statusEl) statusEl.textContent = "Swap transaction reverted.";
-          return;
-        }
-        if (statusEl) statusEl.textContent = "Swap MON→DMN successful!";
-      }
-
-      await refreshBalances();
-      await updateDicePool();
-    } catch (err) {
-      console.error("Swap error:", err);
-      const statusEl2 = $("swapStatus");
-      if (statusEl2) {
-        statusEl2.textContent =
-          (err && err.message) || "Swap failed. See console for details.";
-      }
-      alert(
-        "Swap failed.\n" +
-          (err && err.message ? err.message : "Check console (F12).")
-      );
-    }
+  if (!window.ethereum) {
+    alert("Please install MetaMask to use this dApp.");
+    return;
   }
+  const ok = await ensureMonadNetwork();
+  if (!ok) return;
+
+  if (!currentAccount || !web3Provider || !signer) {
+    alert("Please connect your wallet first.");
+    return;
+  }
+
+  const statusEl = $("swapStatus");
+  const fromInput = $("swapFromAmount");
+  if (!fromInput) return;
+
+  const raw = fromInput.value.trim();
+  if (!raw) {
+    if (statusEl) statusEl.textContent = "Please enter amount.";
+    return;
+  }
+
+  try {
+    initReadProvider();
+    initWriteContracts();
+
+    if (swapDirection === "dmnToMon") {
+      // ===== DMN -> MON =====
+      const amountBN = parseDmnInput(raw);
+      if (!amountBN || amountBN.lte(0)) {
+        if (statusEl) statusEl.textContent = "Invalid DMN amount.";
+        return;
+      }
+
+      if (dmnBalanceBN.lt(amountBN)) {
+        if (statusEl) statusEl.textContent = "Insufficient DMN balance.";
+        alert("Not enough DMN in your wallet.");
+        return;
+      }
+
+      const allowanceBN = await dmnRead.allowance(
+        currentAccount,
+        SWAP_CONTRACT_ADDRESS
+      );
+      if (allowanceBN.lt(amountBN)) {
+        if (statusEl)
+          statusEl.textContent =
+            "Approving DMN for Swap (please confirm in MetaMask)...";
+
+        // Approve không set gasPrice, để MetaMask tự tính
+        const txApprove = await dmnWrite.approve(
+          SWAP_CONTRACT_ADDRESS,
+          amountBN
+        );
+        await txApprove.wait();
+      }
+
+      // ƯỚC LƯỢNG GAS CHO swapDMNForMon
+      if (statusEl)
+        statusEl.textContent = "Estimating gas for DMN→MON swap...";
+      let gasLimit;
+      try {
+        const gasEstimate = await swapWrite.estimateGas.swapDMNForMon(amountBN);
+        gasLimit = gasEstimate.mul(120).div(100); // +20% buffer
+      } catch (err) {
+        console.error("estimateGas swapDMNForMon failed:", err);
+        const reason = extractRevertReason(err);
+        if (statusEl)
+          statusEl.textContent =
+            "Swap would revert on-chain. " + (reason || "");
+        alert(
+          "Swap DMN→MON would revert, so it is not sent.\n" +
+            (reason || "")
+        );
+        return;
+      }
+
+      if (statusEl)
+        statusEl.textContent = "Sending swap DMN→MON transaction...";
+      const tx = await swapWrite.swapDMNForMon(amountBN, { gasLimit });
+      const receipt = await tx.wait();
+      if (receipt.status !== 1) {
+        if (statusEl) statusEl.textContent = "Swap transaction reverted.";
+        return;
+      }
+      if (statusEl) statusEl.textContent = "Swap DMN→MON successful!";
+    } else {
+      // ===== MON -> DMN =====
+      const amountBN = parseMonInput(raw);
+      if (!amountBN || amountBN.lte(0)) {
+        if (statusEl) statusEl.textContent = "Invalid MON amount.";
+        return;
+      }
+      if (monBalanceBN.lt(amountBN)) {
+        if (statusEl) statusEl.textContent = "Insufficient MON balance.";
+        alert("Not enough MON in your wallet.");
+        return;
+      }
+
+      // ƯỚC LƯỢNG GAS CHO swapMonForDMN
+      if (statusEl)
+        statusEl.textContent = "Estimating gas for MON→DMN swap...";
+      let gasLimit;
+      try {
+        const gasEstimate = await swapWrite.estimateGas.swapMonForDMN({
+          value: amountBN,
+        });
+        gasLimit = gasEstimate.mul(120).div(100); // +20% buffer
+      } catch (err) {
+        console.error("estimateGas swapMonForDMN failed:", err);
+        const reason = extractRevertReason(err);
+        if (statusEl)
+          statusEl.textContent =
+            "Swap would revert on-chain. " + (reason || "");
+        alert(
+          "Swap MON→DMN would revert, so it is not sent.\n" +
+            (reason || "")
+        );
+        return;
+      }
+
+      if (statusEl)
+        statusEl.textContent = "Sending swap MON→DMN transaction...";
+      const tx = await swapWrite.swapMonForDMN({
+        value: amountBN,
+        gasLimit,
+      });
+      const receipt = await tx.wait();
+      if (receipt.status !== 1) {
+        if (statusEl) statusEl.textContent = "Swap transaction reverted.";
+        return;
+      }
+      if (statusEl) statusEl.textContent = "Swap MON→DMN successful!";
+    }
+
+    await refreshBalances();
+    await updateDicePool();
+  } catch (err) {
+    console.error("Swap error:", err);
+    const statusEl2 = $("swapStatus");
+    if (statusEl2) {
+      statusEl2.textContent =
+        (err && err.message) || "Swap failed. See console for details.";
+    }
+    alert(
+      "Swap failed.\n" +
+        (err && err.message ? err.message : "Check console (F12).")
+    );
+  }
+}
 
   // ===== Dice Visual =====
   function setDiceShaking(shaking) {
