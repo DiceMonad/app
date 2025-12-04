@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DiceMonad – Swap & Dice on Monad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="DiceMonad dApp on Monad: Swap DMN ↔ MON at 1:1, play on-chain Dice with DMN, and see real-time DMN/USD reference price from MON."
+  />
+  <meta name="theme-color" content="#020617" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="logo128.png" />
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div class="brand">
+        <img src="dmnlogo.png" alt="DiceMonad Logo" class="brand-logo" />
+        <div class="brand-text">
+          <div class="brand-title">DiceMonad</div>
+          <div class="brand-subtitle">Swap • Dice • On Monad</div>
+        </div>
+      </div>
+
+      <div class="nav-center">
+        <nav class="nav-links">
+          <button class="nav-link active" id="navHome">Home</button>
+          <button class="nav-link" id="navSwap">Swap</button>
+          <button class="nav-link" id="navDice">Dice</button>
+        </nav>
+      </div>
+
+      <div class="nav-right">
+        <div class="price-chip">
+          <span class="price-label">1 DMN ≈</span>
+          <span class="price-value" id="dmnPriceUsd">Loading...</span>
+          <span class="price-label">USD</span>
+        </div>
+
+        <div class="network-indicator">
+          <span class="dot dot-disconnected" id="networkDot"></span>
+          <span class="network-label" id="networkName">Not connected</span>
+        </div>
+
+        <button class="btn btn-connect" id="connectButton">
+          Connect Wallet
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- HOME SCREEN -->
+      <section class="screen screen-active" id="home-screen">
+        <div class="hero-layout">
+          <div class="hero-card">
+            <div class="hero-main">
+              <h1>DiceMonad on Monad</h1>
+              <p class="hero-lead">
+                Swap DMN ↔ MON at a fixed 1:1 rate and play fully on-chain Dice
+                using DMN. Transparent, immutable, and gas-efficient on Monad.
+              </p>
+
+              <div class="hero-actions">
+                <button class="btn btn-primary" id="goToSwap">
+                  Swap DMN / MON
+                </button>
+                <button class="btn btn-secondary" id="goToDice">
+                  Play Dice
+                </button>
+              </div>
+
+              <div class="hero-wallet">
+                <div class="status-row">
+                  <span class="status-label">Wallet:</span>
+                  <span class="status-value" id="walletAddressShort">
+                    Not connected
+                  </span>
+                </div>
+                <div class="status-row">
+                  <span class="status-label">DMN Balance:</span>
+                  <span class="status-value" id="dmnBalance">-</span>
+                </div>
+                <div class="status-row">
+                  <span class="status-label">MON Balance:</span>
+                  <span class="status-value" id="monBalance">-</span>
+                </div>
+                <div class="status-row">
+                  <span class="status-label">Dice Pool DMN:</span>
+                  <span class="status-value" id="globalDicePoolDmn">
+                    Loading...
+                  </span>
+                </div>
+                <div class="status-row">
+                  <span class="status-label">Network:</span>
+                  <span class="status-value" id="networkNameHome">
+                    Not connected
+                  </span>
+                </div>
+                <button class="btn btn-outline" id="refreshBalances">
+                  Refresh Balances
+                </button>
+              </div>
+            </div>
+
+            <aside class="hero-side">
+              <h2>How it works</h2>
+              <ul class="info-list">
+                <li>DMN is a 100% on-chain ERC20 token on the Monad (MON) network.</li>
+                <li>Total supply: <strong>121,000,000 DMN</strong>, fixed forever.</li>
+                <li>
+                  <strong>100,000,000 DMN</strong> are locked permanently in the
+                  <strong>Swap Pool</strong> for 1:1 MON ↔ DMN swaps (until depleted).
+                </li>
+                <li>
+                  <strong>21,000,000 DMN</strong> are locked in the
+                  <strong>Dice Reward Pool</strong>; only Dice winners can withdraw DMN.
+                </li>
+                <li>No team wallets, no admin keys, no liquidity withdrawal.</li>
+                <li>
+                  All swaps, bets, and rewards are computed fully on-chain from
+                  transparent smart contracts.
+                </li>
+              </ul>
+              <p class="info-note">
+                Both the Swap Pool and the Dice Reward Pool are immutable and
+                permissionless. No entity can withdraw the locked DMN.
+                You can verify everything directly on MonadVision.
+              </p>
+            </aside>
+          </div>
+
+          <!-- DMN Roadmap Card -->
+          <div class="home-roadmap-card">
+            <div class="roadmap-header">
+              <h2>DMN Roadmap</h2>
+              <p class="roadmap-subtitle">
+                Fixed supply. Two immutable pools. Community-driven usage.
+              </p>
+            </div>
+
+            <div class="roadmap-grid">
+              <div class="roadmap-column">
+                <h3>Phase 1 – 1:1 Swap & Dice (Current)</h3>
+                <ul class="roadmap-list">
+                  <li>
+                    Total supply: <strong>121,000,000 DMN</strong> on Monad.
+                  </li>
+                  <li>
+                    <strong>100,000,000 DMN</strong> are locked permanently in the
+                    <strong>Swap Pool</strong> to support a fixed 1:1 MON ↔ DMN rate
+                    (no slippage, no fees) until the pool is drained.
+                  </li>
+                  <li>
+                    <strong>21,000,000 DMN</strong> are locked in the
+                    <strong>Dice Reward Pool</strong>. Only game winners can withdraw DMN.
+                  </li>
+                  <li>
+                    There are no team wallets, no admin keys, and no liquidity withdrawals.
+                  </li>
+                  <li>
+                    DMN/USD is referenced from MON price on external aggregators
+                    such as CoinGecko as a simple price indicator.
+                  </li>
+                </ul>
+              </div>
+
+              <div class="roadmap-column">
+                <h3>Phase 2 – Swap Pool Depleted</h3>
+                <ul class="roadmap-list">
+                  <li>
+                    When the <strong>100,000,000 DMN in the Swap Pool</strong> are
+                    fully swapped out, the 1:1 MON ↔ DMN swap ends automatically.
+                  </li>
+                  <li>
+                    DMN becomes <strong>harder to obtain</strong>: mainly via
+                    secondary markets or by winning Dice.
+                  </li>
+                  <li>
+                    The community may:
+                    <ul class="roadmap-sublist">
+                      <li>Request CEX listings for DMN.</li>
+                      <li>Create DMN/MON or DMN/USDT liquidity pools on DEX.</li>
+                    </ul>
+                  </li>
+                  <li>
+                    Until major external listings, DMN reference price can still
+                    be inferred from MON price or community-defined markets.
+                  </li>
+                </ul>
+              </div>
+
+              <div class="roadmap-column">
+                <h3>Phase 3 – External Listings</h3>
+                <ul class="roadmap-list">
+                  <li>
+                    Once DMN is listed on <strong>DEX/CEX</strong>, DMN will have
+                    a fully <strong>market-driven price</strong>.
+                  </li>
+                  <li>
+                    DMN price in USD can be taken from
+                    <strong>CoinGecko / CoinMarketCap</strong> or other aggregators.
+                  </li>
+                  <li>
+                    DMN becomes an <strong>independent asset</strong>, no longer
+                    tied to the 1:1 Swap Pool.
+                  </li>
+                  <li>
+                    Holders can trade, provide liquidity, and build new products
+                    around DMN.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="roadmap-footer">
+              <p class="roadmap-tagline">
+                <strong>Got MON? Get DMN.</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SWAP SCREEN -->
+      <section class="screen" id="swap-screen">
+        <div class="screen-header">
+          <h1>Swap DMN ↔ MON</h1>
+          <p class="screen-subtitle">
+            Fixed 1:1 rate between DMN (ERC20) and MON (native) on Monad.
+          </p>
+        </div>
+
+        <div class="swap-layout">
+          <div class="swap-card">
+            <div class="swap-header">
+              <div class="swap-tabs">
+                <button class="swap-tab active" id="tabDmnToMon">
+                  DMN → MON
+                </button>
+                <button class="swap-tab" id="tabMonToDmn">
+                  MON → DMN
+                </button>
+              </div>
+            </div>
+
+            <div class="swap-body">
+              <div class="swap-row">
+                <div class="swap-label-row">
+                  <span class="swap-label">From</span>
+                  <span class="swap-balance" id="fromBalanceLabel">
+                    Balance: -
+                  </span>
+                </div>
+                <div class="swap-input-row">
+                  <input
+                    type="text"
+                    inputmode="decimal"
+                    placeholder="0.0"
+                    id="swapFromAmount"
+                    class="swap-input"
+                  />
+                  <button class="swap-token-tag" id="swapFromToken">
+                    DMN
+                  </button>
+                  <button class="btn-max" id="swapMaxButton">
+                    MAX
+                  </button>
+                </div>
+              </div>
+
+              <div class="swap-row">
+                <div class="swap-label-row">
+                  <span class="swap-label">To</span>
+                  <span class="swap-balance" id="toBalanceLabel">
+                    Balance: -
+                  </span>
+                </div>
+                <div class="swap-input-row">
+                  <input
+                    type="text"
+                    placeholder="0.0"
+                    id="swapToAmount"
+                    class="swap-input"
+                    readonly
+                  />
+                  <button class="swap-token-tag" id="swapToToken">
+                    MON
+                  </button>
+                </div>
+              </div>
+
+              <div class="swap-rate">
+                <span id="swapRateLabel">Rate: loading...</span>
+              </div>
+
+              <button class="btn btn-primary btn-swap-action" id="swapActionButton">
+                Swap
+              </button>
+
+              <div class="tx-status" id="swapStatus">
+                Ready to swap.
+              </div>
+            </div>
+          </div>
+
+          <aside class="swap-info-card">
+            <h2>Swap Information</h2>
+            <ul class="info-list">
+              <li>Smart contract: DMNSwap (Monad).</li>
+              <li>DMN → MON requires DMN approve to the swap contract.</li>
+              <li>MON → DMN sends MON as native value in the transaction.</li>
+              <li>The rate is fixed at 1:1 and enforced by the contract.</li>
+              <li>All swaps are fully on-chain and verifiable.</li>
+            </ul>
+            <p class="info-note">
+              Always double-check contract addresses before using the dApp.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <!-- DICE SCREEN -->
+      <section class="screen" id="dice-screen">
+        <div class="screen-header">
+          <h1>Dice Game (DMN)</h1>
+          <p class="screen-subtitle">
+            Bet DMN on Even or Odd. The outcome is decided on-chain using block
+            data. If you win, you get back 2× your bet (minus gas).
+          </p>
+        </div>
+
+        <div class="dice-layout">
+          <!-- Player & pool card -->
+          <div class="dice-card dice-card-left">
+            <div class="dice-section">
+              <h2>Your Wallet</h2>
+              <div class="status-row">
+                <span class="status-label">Wallet:</span>
+                <span class="status-value" id="diceWalletAddressShort">
+                  Not connected
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">DMN Balance:</span>
+                <span class="status-value" id="diceDmnBalance">
+                  -
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">MON Balance:</span>
+                <span class="status-value" id="diceMonBalance">
+                  -
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Dice Allowance:</span>
+                <span class="status-value" id="diceAllowance">
+                  -
+                </span>
+              </div>
+            </div>
+
+            <div class="dice-section">
+              <h2>Reward Pool (DMN)</h2>
+              <div class="status-row">
+                <span class="status-label">Bankroll:</span>
+                <span class="status-value" id="dicePoolDmnTop">
+                  Loading...
+                </span>
+              </div>
+              <p class="dice-note">
+                This is the DMN bankroll in the Dice contract used to pay winners.
+                It is funded and locked on-chain, not withdrawable by the dev.
+              </p>
+            </div>
+
+            <div class="dice-section">
+              <h2>Approval</h2>
+              <p class="dice-note">
+                Before playing, you must approve DMN for the Dice contract once.
+                The dApp will approve a large amount (for example 10,000,000 DMN)
+                so you do not need to approve every bet. You can always reduce
+                allowance later from your wallet.
+              </p>
+              <button class="btn btn-primary btn-full" id="diceApproveButton">
+                Approve DMN for Dice
+              </button>
+              <div class="dice-min-info" id="diceMinInfo">
+                Minimum bet: loading...
+              </div>
+            </div>
+          </div>
+
+          <!-- Play card -->
+          <div class="dice-card dice-card-right">
+            <div class="dice-section">
+              <h2>Place Your Bet</h2>
+              <label class="dice-label" for="diceBetAmount">Bet Amount (DMN)</label>
+              <div class="dice-input-row">
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  id="diceBetAmount"
+                  class="dice-input"
+                  placeholder="0.0"
+                  value="0.01"
+                />
+                <button class="btn-max" id="diceMaxButton">MAX</button>
+              </div>
+              <div class="dice-minimum-line" id="diceMinimumText">
+                Minimum bet: 0.0100 DMN
+              </div>
+            </div>
+
+            <div class="dice-section">
+              <h2>Choose your guess</h2>
+              <div class="dice-guess-buttons">
+                <button
+                  class="btn-toggle guess-button active"
+                  data-guess="even"
+                  id="guessEvenButton"
+                >
+                  Even
+                </button>
+                <button
+                  class="btn-toggle guess-button"
+                  data-guess="odd"
+                  id="guessOddButton"
+                >
+                  Odd
+                </button>
+              </div>
+            </div>
+
+            <div class="dice-section">
+              <div class="dice-tools">
+                <span class="dice-label">Quick tools</span>
+                <div class="dice-tool-buttons">
+                  <button class="btn-tool" id="diceRepeatButton">Repeat</button>
+                  <button class="btn-tool" id="diceHalfButton">½</button>
+                  <button class="btn-tool" id="diceDoubleButton">×2</button>
+                  <button class="btn-tool" id="diceClearButton">Clear</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visual -->
+            <div class="dice-section">
+              <div class="dice-visual" id="diceVisual">
+                <div class="dice-orb"></div>
+                <div class="dice-coins">
+                  <span class="dice-coin dice-coin-white"></span>
+                  <span class="dice-coin dice-coin-red"></span>
+                  <span class="dice-coin dice-coin-white"></span>
+                  <span class="dice-coin dice-coin-red"></span>
+                </div>
+              </div>
+              <p class="dice-note">
+                The 4 coins are a visual effect. The real Even/Odd result is
+                computed on-chain from block data by the DMN Dice contract.
+              </p>
+            </div>
+
+            <div class="dice-section">
+              <button class="btn btn-primary btn-full" id="dicePlayButton">
+                Play Dice
+              </button>
+              <div class="tx-status" id="diceStatus">
+                Place your bet and choose Even or Odd to start.
+              </div>
+            </div>
+
+            <div class="dice-section dice-last-result">
+              <h2>Last Result</h2>
+              <div class="last-row">
+                <span class="last-label">Last roll:</span>
+                <span class="last-value" id="diceLastResult">-</span>
+              </div>
+              <div class="last-row">
+                <span class="last-label">Outcome:</span>
+                <span class="last-value" id="diceLastOutcome">-</span>
+              </div>
+              <div class="last-row">
+                <span class="last-label">You:</span>
+                <span class="last-value" id="diceLastWinLoss">-</span>
+              </div>
+              <div class="last-row">
+                <span class="last-label">Payout:</span>
+                <span class="last-value" id="diceLastPayout">-</span>
+              </div>
+              <div class="last-row">
+                <span class="last-label">Tx Hash:</span>
+                <span class="last-value" id="diceLastTx">-</span>
+              </div>
+              <button class="btn btn-outline" id="diceRefreshLast">
+                Refresh Last Game
+              </button>
+            </div>
+
+            <div class="dice-section">
+              <h2>Reward Pool</h2>
+              <p class="dice-note">
+                Reward Pool: <span id="dicePoolDmn">Loading...</span>
+              </p>
+              <p class="dice-note">
+                All game results are on-chain. You can verify them through the
+                Monad block explorer using your wallet address and transaction hashes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-main">
+        <span>© 2025 DiceMonad</span>
+        <span class="footer-dot">•</span>
+        <a
+          href="https://monadvision.com/token/0xd86d530e8A920be3b38547FC3157019acfF862F9"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          DMN Token Contract
+        </a>
+        <span class="footer-dot">•</span>
+        <a
+          href="https://monadvision.com/address/0xcb83C2c5BFB7B6e77fffa56B22B6EA416bAC2E99"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Swap Contract
+        </a>
+        <span class="footer-dot">•</span>
+        <a
+          href="https://monadvision.com/address/0xb2369f3083EB6D62644dF8A3c67e6888b71703e6"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Dice Contract
+        </a>
+      </div>
+      <div class="footer-links">
+        <a href="https://x.com/dicemonad" target="_blank" rel="noopener noreferrer">
+          Twitter
+        </a>
+        <span class="footer-dot">•</span>
+        <a href="https://t.me/dicemonadofficial" target="_blank" rel="noopener noreferrer">
+          Telegram
+        </a>
+        <span class="footer-dot">•</span>
+        <a href="https://github.com/dicemonad" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+        <span class="footer-dot">•</span>
+        <a
+          href="https://ipfs.io/ipfs/bafybeifp5oka2nqvcv24yd23pfm2pasil3mzzjk3ng472j3gpqo3uq5kva"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          IPFS Link
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- DMN price reference (via MON price on CoinGecko) -->
+  <script>
+    async function fetchDmnPriceUsd() {
+      const label = document.getElementById("dmnPriceUsd");
+      if (!label) return;
+
+      try {
+        label.textContent = "Loading...";
+        const res = await fetch(
+          "https://api.coingecko.com/api/v3/simple/price?ids=monad&vs_currencies=usd"
+        );
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status);
+        }
+        const data = await res.json();
+        const monPrice = data && data.monad && data.monad.usd;
+        if (!monPrice) {
+          label.textContent = "N/A";
+          return;
+        }
+        // 1 DMN = 1 MON (1:1), so DMN reference price = MON price
+        label.textContent = monPrice.toFixed(4);
+      } catch (err) {
+        console.error("Error fetching DMN price (via MON):", err);
+        label.textContent = "N/A";
+      }
+    }
+
+    fetchDmnPriceUsd();
+    setInterval(fetchDmnPriceUsd, 60000);
+  </script>
+
+  <!-- Ethers.js (v5) and main dApp logic -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
