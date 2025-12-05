@@ -881,7 +881,7 @@
       const statusEl = $("diceStatus");
       if (statusEl) statusEl.textContent = "Sending approve transaction...";
 
-      const maxAmount = ethers.utils.parseUnits("10000000", VIN_DECIMALS); // 10,000,000 VIN
+      const maxAmount = ethers.utils.parseUnits("100000000", VIN_DECIMALS); // 100,000,000 VIN
       const tx = await vinWrite.approve(DICE_CONTRACT_ADDRESS, maxAmount);
       const receipt = await tx.wait();
       if (receipt.status !== 1) {
