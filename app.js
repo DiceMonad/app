@@ -820,14 +820,47 @@
     }
   }
 
-  function setDiceVisual(resultEven) {
-    const visual = $("diceVisual");
-    if (!visual) return;
-    visual.classList.remove("dice-even", "dice-odd");
-    if (resultEven === null || resultEven === undefined) return;
-    if (resultEven) visual.classList.add("dice-even");
-    else visual.classList.add("dice-odd");
-  }
+  function getDiceResult(isEven) {
+  // Even: 3 possible random results
+  const evenResults = [
+    ['white', 'white', 'white', 'white'],
+    ['red', 'red', 'red', 'red'],
+    ['white', 'white', 'red', 'red']
+  ];
+  // Odd: 2 possible random results
+  const oddResults = [
+    ['red', 'white', 'red', 'red'],
+    ['red', 'red', 'red', 'white']
+  ];
+  
+  return isEven ? evenResults[Math.floor(Math.random() * evenResults.length)] : oddResults[Math.floor(Math.random() * oddResults.length)];
+}
+
+function displayDiceResult(result) {
+  const coins = document.querySelectorAll(".dice-coin");
+  result.forEach((color, index) => {
+    if (coins[index]) {
+      coins[index].classList.remove('dice-coin-white', 'dice-coin-red');
+      coins[index].classList.add(color === 'white' ? 'dice-coin-white' : 'dice-coin-red');
+    }
+  });
+}
+
+function onPlayDice() {
+  // Determine if the player chose even or odd
+  const result = getDiceResult(diceGuessEven);
+  
+  // Show shaking effect
+  const diceVisual = document.getElementById('diceVisual');
+  diceVisual.classList.add('dice-shaking');
+  
+  // Update the dice result after shaking
+  setTimeout(() => {
+    diceVisual.classList.remove('dice-shaking');
+    displayDiceResult(result);
+  }, 2000);  // Shake for 2s, then display result
+}
+
 
   function updateDiceLastResultUI() {
     const resEl = $("diceLastResult");
