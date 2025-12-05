@@ -993,7 +993,7 @@
           choice,
           clientSeed
         );
-        gasLimit = gasEstimate.mul(200).div(100);
+        gasLimit = gasEstimate.mul(120).div(100);
       } catch (err) {
         console.error("Dice estimateGas reverted:", err);
         const reason = extractRevertReason(err);
