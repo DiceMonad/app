@@ -524,36 +524,37 @@
 
   // ===== Swap Logic =====
   function updateSwapDirectionUI() {
-    const tabVinToMon = $("tabVinToMon");
-    const tabMonToVin = $("tabMonToVin");
-    const fromToken = $("swapFromToken");
-    const toToken = $("swapToToken");
-    const rateLabel = $("swapRateLabel");
+  const tabVinToMon = $("tabVinToMon");
+  const tabMonToVin = $("tabMonToVin");
+  const fromToken = $("swapFromToken");
+  const toToken = $("swapToToken");
+  const rateLabel = $("swapRateLabel");
 
-    if (tabVinToMon && tabMonToVin) {
-      tabVinToMon.classList.remove("swap-tab-active");
-      tabMonToVin.classList.remove("swap-tab-active");
-      if (swapDirection === "vinToMon") {
-        tabVinToMon.classList.add("swap-tab-active");
-      } else {
-        tabMonToVin.classList.add("swap-tab-active");
-      }
-    }
-
-    if (fromToken && toToken) {
-      if (swapDirection === "vinToMon") {
-        fromToken.textContent = "VIN";
-        toToken.textContent = "MON";
-      } else {
-        fromToken.textContent = "MON";
-        toToken.textContent = "VIN";
-      }
-    }
-
-    if (rateLabel) {
-      rateLabel.textContent = "1 VIN = 1 MON (fixed while pool has liquidity)";
+  if (tabVinToMon && tabMonToVin) {
+    // Dùng class "active" giống index.html & style.css
+    tabVinToMon.classList.remove("active");
+    tabMonToVin.classList.remove("active");
+    if (swapDirection === "vinToMon") {
+      tabVinToMon.classList.add("active");
+    } else {
+      tabMonToVin.classList.add("active");
     }
   }
+
+  if (fromToken && toToken) {
+    if (swapDirection === "vinToMon") {
+      fromToken.textContent = "VIN";
+      toToken.textContent = "MON";
+    } else {
+      fromToken.textContent = "MON";
+      toToken.textContent = "VIN";
+    }
+  }
+
+  if (rateLabel) {
+    rateLabel.textContent = "1 VIN = 1 MON (fixed while pool has liquidity)";
+  }
+}
 
   function getSwapInputElements() {
     return {
