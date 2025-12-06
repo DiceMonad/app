@@ -16,8 +16,6 @@
 
 ## 🚀 Live dApp  
 👉 **https://vinmondice.github.io/app**  
-👉 **IPFS Mirror:**  
-https://ipfs.io/ipfs/bafybeifp5oka2nqvcv24yd23pfm2pasil3mzzjk3ng472j3gpqo3uq5kva  
 
 ---
 
