@@ -404,9 +404,44 @@
                   class="dice-input"
                   placeholder="0.0"
                   value="0.000001"
+                  lang="en"
+                  pattern="[0-9]*[.,]?[0-9]*"
+                  autocomplete="off"
+                  aria-label="Bet Amount in VIN"
                 />
                 <button class="btn-max" id="diceMaxButton">MAX</button>
               </div>
+
+<!-- Normalise mobile decimal input (replace comma with dot, remove invalid chars, keep single dot) -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const diceInput = document.getElementById('diceBetAmount');
+  if (!diceInput) return;
+
+  diceInput.addEventListener('input', (e) => {
+    const cur = e.target.value;
+    // 1) replace commas with dots (mobile locales), 2) keep only digits and dots
+    let normalized = String(cur).replace(/,/g, '.').replace(/[^\d.]/g, '');
+    // 3) keep only first dot, remove any extra dots by joining remaining parts
+    const parts = normalized.split('.');
+    if (parts.length > 1) {
+      const intPart = parts.shift();
+      const fracPart = parts.join(''); // concatenate remaining parts (removes extra dots)
+      normalized = intPart + '.' + fracPart;
+    }
+    // 4) avoid replacing if same (to reduce caret jumps)
+    if (normalized !== cur) {
+      // try preserve caret position roughly
+      const pos = e.target.selectionStart || normalized.length;
+      e.target.value = normalized;
+      // set caret near previous position (clamped)
+      const newPos = Math.min(pos, normalized.length);
+      try { e.target.setSelectionRange(newPos, newPos); } catch (_) {}
+    }
+  });
+});
+</script>
+
               <div class="dice-minimum-line" id="diceMinimumText">
                 Minimum bet: 0.000001 VIN. Maximum bet is the VIN balance currently available in the Reward Pool before you place your bet.
               </div>
