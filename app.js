@@ -288,15 +288,26 @@ function parseVinInput(str) {
 }
 
 
-  function parseMonInput(str) {
-    const s = (str || "").trim().replace(/,/g, "");
-    if (!s) return null;
-    try {
-      return ethers.utils.parseUnits(s, MON_DECIMALS);
-    } catch {
-      return null;
-    }
+  // Robust parsing for MON input (accepts both '.' and ',' as decimal separator)
+function parseMonInput(str) {
+  if (str === null || str === undefined) return null;
+  let s = String(str).trim();
+  // replace comma with dot (mobile locales), remove non-digit/dot
+  s = s.replace(/,/g, '.').replace(/[^\d.]/g, '');
+  if (!s || s === '.') return null;
+  const parts = s.split('.');
+  if (parts.length > 1) {
+    const intPart = parts.shift();
+    const fracPart = parts.join('');
+    s = intPart + '.' + fracPart;
   }
+  try {
+    return ethers.utils.parseUnits(s, MON_DECIMALS);
+  } catch (err) {
+    return null;
+  }
+}
+
 
   function getRandomClientSeed() {
     if (window.crypto && window.crypto.getRandomValues) {
