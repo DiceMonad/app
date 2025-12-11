@@ -16,7 +16,7 @@
 
 ## 🚀 Live dApp  
 👉 **https://vinmondice.github.io/app**  
-
+👉 **https://ipfs.io/ipfs/bafybeigh2cnllrenu3gbtn6qk2ctlqs54ibwqwewa4s56squkzpguhcsve**
 # 🔥 Overview
 
 **VIN** is a minimal, immutable, and fully autonomous smart-contract ecosystem deployed on the **Monad (MON) Mainnet**.
